@@ -1,10 +1,23 @@
 <template>
-  <q-page class="bg-black flex flex-center column">
-    Monitor Page
+  <q-page class="bg-black">
+    <div class="row justify-center items-start q-ma-es">
+      <div class="col bg-white">TIMER</div>
+      <div class="col bg-green">ALARM</div>
+      <div class="col bg-white">ALARMMESSAGE</div>
+    </div>
+    <div class="row justify-center items-start q-ma-es">
+      <div class="col-8 bg-white">column one</div>
+      <div class="col-2 bg-green">HR</div>
+      <div class="col-2 bg-white">column three</div>
+    </div>
 
-    <q-btn :class="butConnectClass" @click="toggleConnection">
-      {{ butConnectText }}</q-btn
-    >
+    <div class="row absolute-bottom justify-center items-start q-ma-es">
+      <div class="q-gutter-xs">
+        <q-btn color="grey" label="Button" v-for="n in 12" :key="`xs-${n}`" />
+      </div>
+    </div>
+
+    <q-resize-observer @resize="onResize" />
   </q-page>
 </template>
 
@@ -20,6 +33,13 @@ export default {
     };
   },
   methods: {
+    onResize() {
+      console.log(this.$q.screen.height);
+      this.$root.$emit("resize", {
+        width: this.$q.screen.width,
+        height: this.$q.screen.height,
+      });
+    },
     toggleConnection() {
       if (this.websocket) {
         if (this.websocket.readyState !== 1) {
