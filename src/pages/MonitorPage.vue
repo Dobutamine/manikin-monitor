@@ -12,7 +12,12 @@
           :chartHeight="chartHeight"
           labelColor="#00ff00"
           labelName="II"
+          :gridEnabled="false"
           gridColor="0x00ff00"
+          chartColor="0x00ff00"
+          :monitorStarted="monitorStarted"
+          :speed="10"
+          :performance="performance"
         ></ChannelComponent>
       </div>
       <div class="col-2">
@@ -22,7 +27,7 @@
             <div style="font-size: 10px">200</div>
             <div style="font-size: 10px">80</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 52px">
+          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">
             135
           </div>
         </div>
@@ -34,19 +39,27 @@
             <div style="font-size: 10px">200</div>
             <div style="font-size: 10px">80</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 36px">
+          <div class="col-10 text-left q-pa-xs" style="font-size: 36px">
             135
           </div>
         </div>
       </div>
     </div>
+
     <div class="row justify-center q-ma-es text-purple-12" :style="rowHeight">
       <div class="col-8">
-        <!-- <ChannelComponent
-          chartId="Pleth1"
+        <ChannelComponent
+          chartId="SpO2(1)"
           :chartHeight="chartHeight"
-          labelColor="#ffff00"
-        ></ChannelComponent> -->
+          labelColor="0xce04fd"
+          labelName="Pleth(1)"
+          :gridEnabled="true"
+          gridColor="0xce04fd"
+          chartColor="0xce04fd"
+          :monitorStarted="monitorStarted"
+          :speed="10"
+          :performance="performance"
+        ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
@@ -55,7 +68,7 @@
             <div style="font-size: 10px">100</div>
             <div style="font-size: 10px">92</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 52px">97</div>
+          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">97</div>
         </div>
       </div>
       <div class="col-2">
@@ -73,11 +86,18 @@
     </div>
     <div class="row justify-center q-ma-es text-purple-13" :style="rowHeight">
       <div class="col-8">
-        <!-- <ChannelComponent
-          chartId="Pleth2"
+        <ChannelComponent
+          chartId="SpO2(2)"
           :chartHeight="chartHeight"
-          labelColor="#ffff00"
-        ></ChannelComponent> -->
+          labelColor="0xde56fd"
+          labelName="Pleth(2)"
+          :gridEnabled="true"
+          gridColor="0xde56fd"
+          chartColor="0xde56fd"
+          :monitorStarted="monitorStarted"
+          :speed="10"
+          :performance="performance"
+        ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
@@ -86,40 +106,51 @@
             <div style="font-size: 10px">100</div>
             <div style="font-size: 10px">92</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 52px">95</div>
+          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">95</div>
         </div>
       </div>
       <div class="col-2"></div>
     </div>
     <div class="row justify-center q-ma-es text-pink" :style="rowHeight">
       <div class="col-8">
-        <!-- <ChannelComponent
+        <ChannelComponent
           chartId="ABP"
           :chartHeight="chartHeight"
-          labelColor="#ffff00"
-        ></ChannelComponent> -->
+          labelColor="#dd0000"
+          labelName="ABP"
+          :gridEnabled="true"
+          gridColor="0xdd0000"
+          chartColor="0xff0000"
+          :monitorStarted="monitorStarted"
+          :speed="10"
+          :performance="performance"
+        ></ChannelComponent>
       </div>
-      <div class="col-3">
+      <div class="col-4">
         <div class="row">
           <div class="col" style="font-size: 14px">
             <div>ABP</div>
             <div style="font-size: 10px">80</div>
             <div style="font-size: 10px">40</div>
           </div>
-          <div class="col-10 text-left q-pt-sm" style="font-size: 52px">
-            60/40 (42)
-          </div>
+          <div class="col-11 q-pt-xs" style="font-size: 52px">60/40 (42)</div>
         </div>
       </div>
-      <div class="col-1"></div>
     </div>
     <div class="row justify-center q-ma-es text-white" :style="rowHeight">
       <div class="col-8">
-        <!-- <ChannelComponent
-          chartId="Resp"
+        <ChannelComponent
+          chartId="RF"
           :chartHeight="chartHeight"
-          labelColor="#ffff00"
-        ></ChannelComponent> -->
+          labelColor="0xffffff"
+          labelName="RF"
+          :gridEnabled="true"
+          gridColor="0xffffff"
+          chartColor="0xffffff"
+          :monitorStarted="monitorStarted"
+          :speed="5"
+          :performance="performance"
+        ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
@@ -128,19 +159,27 @@
             <div style="font-size: 10px">80</div>
             <div style="font-size: 10px">20</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 52px">45</div>
+          <div class="col-10 text-left q-pa-sm" style="font-size: 68px">45</div>
         </div>
       </div>
       <div class="col-2"></div>
     </div>
     <div class="row justify-center q-ma-es text-yellow" :style="rowHeight">
       <div class="col-8">
-        <!-- <ChannelComponent
-          chartId="CO2"
+        <ChannelComponent
+          chartId="etCO2"
           :chartHeight="chartHeight"
-          labelColor="#ffff00"
-        ></ChannelComponent> -->
+          labelColor="0xf9ea03"
+          labelName="CO2"
+          :gridEnabled="true"
+          gridColor="0xf9ea03"
+          chartColor="0xf9ea03"
+          :monitorStarted="monitorStarted"
+          :speed="5"
+          :performance="performance"
+        ></ChannelComponent>
       </div>
+
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -148,7 +187,7 @@
             <div style="font-size: 10px">7.5</div>
             <div style="font-size: 10px">3.5</div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 52px">
+          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">
             4.5
           </div>
         </div>
@@ -208,6 +247,7 @@
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Start/ Stop"
+          @click="startMonitor"
         />
         <q-btn
           color="grey"
@@ -267,9 +307,18 @@ export default {
       chartHeight: "200",
       butConnectText: "CONNECT TO MANIKIN",
       butConnectClass: "q-ma-lg bg-red text-white",
+      monitorStarted: "false",
+      performance: 50,
     };
   },
   methods: {
+    startMonitor() {
+      if (this.monitorStarted == "true") {
+        this.monitorStarted = "false";
+      } else {
+        this.monitorStarted = "true";
+      }
+    },
     onResize() {
       this.rowHeight = `height: ${this.$q.screen.height / 9}px`;
       this.upperRowHeight = `height: ${this.$q.screen.height / 9 / 3}px`;
