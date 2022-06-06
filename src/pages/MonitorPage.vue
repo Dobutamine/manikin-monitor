@@ -6,7 +6,15 @@
       <div class="col text-black bg-yellow text-center">ALARMMESSAGE</div>
     </div>
     <div class="row justify-center q-ma-es text-green" :style="rowHeight">
-      <div class="col-8">II</div>
+      <div class="col-8">
+        <ChannelComponent
+          chartId="ECG"
+          :chartHeight="chartHeight"
+          labelColor="#00ff00"
+          labelName="II"
+          gridColor="0x00ff00"
+        ></ChannelComponent>
+      </div>
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -33,7 +41,13 @@
       </div>
     </div>
     <div class="row justify-center q-ma-es text-purple-12" :style="rowHeight">
-      <div class="col-8">Pleth(1)</div>
+      <div class="col-8">
+        <!-- <ChannelComponent
+          chartId="Pleth1"
+          :chartHeight="chartHeight"
+          labelColor="#ffff00"
+        ></ChannelComponent> -->
+      </div>
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -58,7 +72,13 @@
       </div>
     </div>
     <div class="row justify-center q-ma-es text-purple-13" :style="rowHeight">
-      <div class="col-8">Pleth(2)</div>
+      <div class="col-8">
+        <!-- <ChannelComponent
+          chartId="Pleth2"
+          :chartHeight="chartHeight"
+          labelColor="#ffff00"
+        ></ChannelComponent> -->
+      </div>
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -72,7 +92,13 @@
       <div class="col-2"></div>
     </div>
     <div class="row justify-center q-ma-es text-pink" :style="rowHeight">
-      <div class="col-8">ABP</div>
+      <div class="col-8">
+        <!-- <ChannelComponent
+          chartId="ABP"
+          :chartHeight="chartHeight"
+          labelColor="#ffff00"
+        ></ChannelComponent> -->
+      </div>
       <div class="col-3">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -88,7 +114,13 @@
       <div class="col-1"></div>
     </div>
     <div class="row justify-center q-ma-es text-white" :style="rowHeight">
-      <div class="col-8">Resp</div>
+      <div class="col-8">
+        <!-- <ChannelComponent
+          chartId="Resp"
+          :chartHeight="chartHeight"
+          labelColor="#ffff00"
+        ></ChannelComponent> -->
+      </div>
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -102,7 +134,13 @@
       <div class="col-2"></div>
     </div>
     <div class="row justify-center q-ma-es text-yellow" :style="rowHeight">
-      <div class="col-8">CO2</div>
+      <div class="col-8">
+        <!-- <ChannelComponent
+          chartId="CO2"
+          :chartHeight="chartHeight"
+          labelColor="#ffff00"
+        ></ChannelComponent> -->
+      </div>
       <div class="col-2">
         <div class="row">
           <div class="col" style="font-size: 14px">
@@ -213,26 +251,29 @@
 </template>
 
 <script>
+import ChannelComponent from "components/ChannelComponent.vue";
+
 export default {
   name: "MonitorPage",
+  components: {
+    ChannelComponent,
+  },
   data() {
     return {
       websocket: null,
       getVitalsTimer: null,
       rowHeight: "height': 150px",
       upperRowHeight: "height': 50px",
+      chartHeight: "200",
       butConnectText: "CONNECT TO MANIKIN",
       butConnectClass: "q-ma-lg bg-red text-white",
     };
   },
   methods: {
     onResize() {
-      this.$root.$emit("resize", {
-        width: this.$q.screen.width,
-        height: this.$q.screen.height,
-      });
       this.rowHeight = `height: ${this.$q.screen.height / 9}px`;
       this.upperRowHeight = `height: ${this.$q.screen.height / 9 / 3}px`;
+      this.chartHeight = (this.$q.screen.height / 9).toString();
     },
     toggleConnection() {
       if (this.websocket) {
