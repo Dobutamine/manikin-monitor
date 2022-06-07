@@ -275,8 +275,13 @@ export default {
         }
       }
       this.chart1.moveTo(this.chart1X, this.prevChart1Y);
-      this.chart2.moveTo(this.chart1X, this.prevChart1Y);
-      this.chart3.moveTo(this.chart1X, this.prevChart1Y);
+      // draw the buffers
+      if (this.bufferChart == 2) {
+        this.chart2.moveTo(this.chart1X, this.prevChart1Y);
+      }
+      if (this.bufferChart == 3) {
+        this.chart3.moveTo(this.chart1X, this.prevChart1Y);
+      }
 
       // draw the graph
       this.chart1X += this.stepsize;
@@ -332,14 +337,23 @@ export default {
 
       if (this.noSignal) {
         this.chart1.lineStyle(1, "0x000000", 1);
-        this.chart2.lineStyle(1, "0x000000", 1);
-        this.chart3.lineStyle(1, "0x000000", 1);
+        if (this.bufferChart == 2) {
+          this.chart2.lineStyle(1, "0x000000", 1);
+        }
+        if (this.bufferChart == 3) {
+          this.chart3.lineStyle(1, "0x000000", 1);
+        }
         this.grid.clear();
         this.pixiApp.stage.removeChild(this.labelText);
       } else {
         this.chart1.lineStyle(2, this.chartColor, 1);
-        this.chart2.lineStyle(2, this.chartColor, 1);
-        this.chart3.lineStyle(2, this.chartColor, 1);
+        if (this.bufferChart == 2) {
+          this.chart2.lineStyle(2, this.chartColor, 1);
+        }
+        if (this.bufferChart == 3) {
+          this.chart3.lineStyle(2, this.chartColor, 1);
+        }
+
         this.chart1.lineTo(this.chart1X, this.chart1Y);
 
         // draw the cursor

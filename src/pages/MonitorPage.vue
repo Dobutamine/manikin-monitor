@@ -2,7 +2,9 @@
   <q-page class="bg-black">
     <div class="row justify-center q-ma-es" :style="upperRowHeight">
       <div class="col text-yellow"></div>
-      <div class="col text-yellow">ALARM</div>
+      <div :class="alarmPauseClass" style="font-size: 20px">
+        {{ alarmPauseMessage }}
+      </div>
       <div :class="alarmBannerClass" style="font-size: 20px">
         {{ alarmBannerMessage }}
       </div>
@@ -360,11 +362,13 @@
           color="yellow"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Stil"
+          @click="toggleAlarmPause30sec"
         />
         <q-btn
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Pauzeer alarmen"
+          @click="toggleAlarmPause3min"
         />
         <q-btn
           color="grey-8"
@@ -375,13 +379,11 @@
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Start/ Stop"
-          @click="startMonitor"
         />
         <q-btn
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Nullen"
-          @click="changeConfigTest"
         />
         <q-btn
           color="grey"
@@ -406,11 +408,13 @@
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Hoofd opzet"
+          @click="getMonConfig"
         />
         <q-btn
-          color="blue-10"
+          :class="butConnectClass"
           style="height: 60px; width: 80px; font-size: 12px"
-          label="Hoofd scherm"
+          :label="butConnectText"
+          @click="startMonitor"
         />
       </div>
     </div>
@@ -431,11 +435,14 @@ export default {
     return {
       websocket: null,
       getVitalsTimer: null,
+      alarmPauseMessage: "",
+      alarmPauseTimer: null,
+      alarmPauseTimeLeft: 0,
       rowHeight: "height': 150px",
       upperRowHeight: "height': 50px",
       chartHeight: "200",
-      butConnectText: "CONNECT TO MANIKIN",
-      butConnectClass: "q-ma-lg bg-red text-white",
+      butConnectText: "START MONITOR",
+      butConnectClass: "bg-red text-white",
       monitorStarted: "false",
       performance: 30,
       vitals: {
@@ -490,6 +497,7 @@ export default {
       yellowAlarm: true,
       redAlarm: true,
       alarmBannerClass: "col text-black bg-black text-center",
+      alarmPauseClass: "col text-black bg-black text-center",
       alarmBannerMessage: "",
       hrBlinker: false,
       spo2PreBlinker: false,
@@ -501,6 +509,8 @@ export default {
       tempBlinker: false,
       alarmHi: null,
       alarmLo: null,
+      alarmPause30sec: false,
+      alarmPause3min: false,
     };
   },
   mounted() {
@@ -509,7 +519,48 @@ export default {
     this.alarmLo = new Audio("/sounds/alarm_lo.wav");
     this.alarmLo.preload = "auto";
   },
+  beforeUnmount() {
+    clearInterval(this.blinkerTimer);
+    this.disconnectFromManikin();
+  },
   methods: {
+    alarmPauseTimerTick() {
+      this.alarmPauseMessage =
+        "ALARM PAUSED " + this.alarmPauseTimeLeft + " SEC.";
+      this.alarmPauseClass = "col text-red bg-white text-center";
+      this.alarmPauseTimeLeft -= 1;
+      if (this.alarmPauseTimeLeft < 0) {
+        clearInterval(this.alarmPauseTimer);
+        this.alarmPauseMessage = "";
+        this.alarmPause30sec = false;
+        this.alarmPause3min = false;
+        this.alarmPauseClass = "col text-black bg-black text-center";
+      }
+    },
+    toggleAlarmPause30sec() {
+      clearInterval(this.alarmPauseTimer);
+      if (this.alarmPause30sec) {
+        this.alarmPause30sec = false;
+        this.alarmPauseClass = "col text-black bg-black text-center";
+      } else {
+        this.alarmPause30sec = true;
+        this.alarmPauseTimeLeft = 30;
+        this.alarmPauseTimer = setInterval(this.alarmPauseTimerTick, 1000);
+      }
+      this.alarmPause3min = false;
+    },
+    toggleAlarmPause3min() {
+      clearInterval(this.alarmPauseTimer);
+      if (this.alarmPause3min) {
+        this.alarmPause3min = false;
+        this.alarmPauseClass = "col text-black bg-black text-center";
+      } else {
+        this.alarmPause3min = true;
+        this.alarmPauseTimeLeft = 180;
+        this.alarmPauseTimer = setInterval(this.alarmPauseTimerTick, 1000);
+      }
+      this.alarmPause30sec = false;
+    },
     checkAlarms() {
       let yellowAlarm = false;
       let redAlarm = false;
@@ -550,12 +601,12 @@ export default {
       if (this.config.spo2PostAlarmEnabled & this.config.spo2PostEnabled) {
         if (this.vitals.spo2Post < this.config.spo2PostLower) {
           yellowAlarm = true;
-          this.spo2PreBlinker = this.blinker;
+          this.spo2PostBlinker = this.blinker;
           alarmMessage += " *SAT<" + this.config.spo2PostLower;
         }
         if (this.vitals.spo2Post > this.config.spo2PostUpper) {
           yellowAlarm = true;
-          this.spo2PreBlinker = this.blinker;
+          this.spo2PostBlinker = this.blinker;
           alarmMessage += " *SAT>" + this.config.spo2PostUpper;
         }
       }
@@ -651,29 +702,29 @@ export default {
         this.alarmBannerClass = "col text-black bg-yellow text-center";
         this.alarmBannerMessage = alarmMessage;
         // play alarm sound
-        this.alarmLo.play();
+        if (
+          !this.alarmPause30sec &
+          !this.alarmPause3min &
+          !this.alarmOverride
+        ) {
+          this.alarmLo.play();
+        }
       } else {
         this.alarmBannerClass = "col text-black bg-black text-center";
       }
       this.blinker = !this.blinker;
     },
-    changeConfigTest() {
-      this.config.abpEnabled = true;
-      this.vitals.heartrate = 60;
-      this.vitals.spo2Pre = 95;
-      this.config.hrAlarmEnabled = true;
-    },
-    changeVitalsTest() {
-      this.vitals.heartrate = 170;
-    },
     startMonitor() {
       if (this.monitorStarted == "true") {
         this.monitorStarted = "false";
         clearInterval(this.blinkerTimer);
+        this.disconnectFromManikin();
       } else {
         this.monitorStarted = "true";
         this.blinkerTimer = setInterval(this.checkAlarms, 1000);
         this.alarmLo.play();
+        this.connectToManikin();
+        this.getMonConfig();
       }
     },
     onResize() {
@@ -681,27 +732,16 @@ export default {
       this.upperRowHeight = `height: ${this.$q.screen.height / 9 / 3}px`;
       this.chartHeight = (this.$q.screen.height / 9).toString();
     },
-    toggleConnection() {
-      if (this.websocket) {
-        if (this.websocket.readyState !== 1) {
-          this.connectToManikin();
-        } else {
-          this.disconnectFromManikin();
-        }
-      } else {
-        this.connectToManikin();
-      }
-    },
     disconnectFromManikin() {
       this.websocket.close();
     },
     connectToManikin() {
-      this.websocket = new WebSocket("ws://localhost:3001");
+      this.websocket = new WebSocket("ws://192.168.144.144:3001");
 
       this.websocket.onopen = (event) => {
         this.getVitals();
-        this.butConnectText = "DISCONNECT FROM MANIKIN";
-        this.butConnectClass = "q-ma-lg bg-green text-white";
+        this.butConnectText = "STOP MONITOR";
+        this.butConnectClass = "bg-green text-white";
       };
 
       this.websocket.onclose = (event) => {
@@ -713,8 +753,8 @@ export default {
           alert("Connection to manikin unexpectedly died");
           clearInterval(this.getVitalsTimer);
         }
-        this.butConnectText = "CONNECT TO MANIKIN";
-        this.butConnectClass = "q-ma-lg bg-red text-white";
+        this.butConnectText = "START MONITOR";
+        this.butConnectClass = "bg-red text-white";
       };
 
       this.websocket.onerror = (error) => {
@@ -727,7 +767,38 @@ export default {
       };
     },
     processData(data) {
-      console.log(data);
+      let newData = JSON.parse(data);
+      switch (newData.target) {
+        case "vitals":
+          this.updateVitals(newData);
+          break;
+        case "config":
+          this.updateMonConfig(newData);
+          break;
+      }
+    },
+    updateMonConfig(newConfig) {
+      // check whether something has changed
+
+      this.config = newConfig;
+    },
+    updateVitals(newData) {
+      this.vitals.heartrate = newData.hr;
+      this.vitals.spo2Pre = newData.spo2_pre;
+      this.vitals.spo2Post = newData.spo2_post;
+      this.vitals.abpSyst = newData.abp_syst;
+      this.vitals.abpDiast = newData.abp_diast;
+      this.vitals.abpMean = parseInt(
+        (this.vitals.abpSyst + 2 * this.vitals.abpDiast) / 3
+      );
+      this.vitals.resprate = newData.resp_rate;
+      this.vitals.etco2 = newData.etco2;
+      this.vitals.temp = newData.temp;
+      this.vitals.pfi = newData.pfi;
+      if (newData.configChange == true) {
+        console.log("config change");
+        this.getMonConfig();
+      }
     },
     getVitals() {
       clearInterval(this.getVitalsTimer);
