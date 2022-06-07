@@ -3,7 +3,9 @@
     <div class="row justify-center q-ma-es" :style="upperRowHeight">
       <div class="col text-yellow"></div>
       <div class="col text-yellow">ALARM</div>
-      <div class="col text-black bg-yellow text-center">ALARMMESSAGE</div>
+      <div :class="alarmBannerClass" style="font-size: 20px">
+        {{ alarmBannerMessage }}
+      </div>
     </div>
     <div class="row justify-center q-ma-es text-green" :style="rowHeight">
       <div class="col-8">
@@ -19,29 +21,46 @@
           :timeframe="6"
           :performance="performance"
           signalSource="ecg"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.hrEnabled" class="col" style="font-size: 14px">
             <div>HF</div>
-            <div style="font-size: 10px">200</div>
-            <div style="font-size: 10px">80</div>
+            <div style="font-size: 10px">{{ config.hrUpper }}</div>
+            <div style="font-size: 10px">{{ config.hrLower }}</div>
+            <div
+              v-if="!config.hrAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">
-            135
+          <div
+            v-if="config.hrEnabled & !hrBlinker"
+            class="col-10 text-left q-pa-xs"
+            style="font-size: 68px"
+          >
+            {{ vitals.heartrate }}
           </div>
         </div>
       </div>
       <div class="col-2 text-purple-12">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.spo2PreEnabled" class="col" style="font-size: 14px">
             <div>Pols</div>
-            <div style="font-size: 10px">200</div>
-            <div style="font-size: 10px">80</div>
+            <div style="font-size: 10px">{{ config.hrUpper }}</div>
+            <div style="font-size: 10px">{{ config.hrLower }}</div>
           </div>
-          <div class="col-10 text-left q-pa-xs" style="font-size: 36px">
-            135
+          <div
+            v-if="config.spo2PreEnabled"
+            class="col-10 text-left q-pa-xs"
+            style="font-size: 36px"
+          >
+            {{ vitals.heartrate }}
           </div>
         </div>
       </div>
@@ -60,28 +79,47 @@
           :monitorStarted="monitorStarted"
           :timeframe="6"
           :performance="performance"
-          signalSource="abp"
+          signalSource="spo2pre"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
-            <div>SpO2</div>
-            <div style="font-size: 10px">100</div>
-            <div style="font-size: 10px">92</div>
+          <div v-if="config.spo2PreEnabled" class="col" style="font-size: 14px">
+            <div>SpO2(1)</div>
+            <div style="font-size: 10px">{{ config.spo2PreUpper }}</div>
+            <div style="font-size: 10px">{{ config.spo2PreLower }}</div>
+            <div
+              v-if="!config.spo2PreAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">97</div>
+          <div
+            v-if="config.spo2PreEnabled & !spo2PreBlinker"
+            class="col-10 text-left q-pa-xs"
+            style="font-size: 68px"
+          >
+            {{ vitals.spo2Pre }}
+          </div>
         </div>
       </div>
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.spo2PreEnabled" class="col" style="font-size: 14px">
             <div>PFI</div>
             <div style="font-size: 10px"></div>
             <div style="font-size: 10px"></div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 36px">
-            1.2
+          <div
+            v-if="config.spo2PreEnabled"
+            class="col-10 text-left q-pa-sm"
+            style="font-size: 36px"
+          >
+            {{ vitals.pfi }}
           </div>
         </div>
       </div>
@@ -99,17 +137,36 @@
           :monitorStarted="monitorStarted"
           :timeframe="6"
           :performance="performance"
-          signalSource="abp"
+          signalSource="spo2post"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div
+            v-if="config.spo2PostEnabled"
+            class="col"
+            style="font-size: 14px"
+          >
             <div>SpO2(2)</div>
-            <div style="font-size: 10px">100</div>
-            <div style="font-size: 10px">92</div>
+            <div style="font-size: 10px">{{ config.spo2PostUpper }}</div>
+            <div style="font-size: 10px">{{ config.spo2PostLower }}</div>
+            <div
+              v-if="!config.spo2PostAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">95</div>
+          <div
+            v-if="config.spo2PostEnabled & !spo2PostBlinker"
+            class="col-10 text-left q-pa-xs"
+            style="font-size: 68px"
+          >
+            {{ vitals.spo2Post }}
+          </div>
         </div>
       </div>
       <div class="col-2"></div>
@@ -128,16 +185,31 @@
           :timeframe="6"
           :performance="performance"
           signalSource="abp"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
       <div class="col-4">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.abpEnabled" class="col" style="font-size: 14px">
             <div>ABP</div>
-            <div style="font-size: 10px">80</div>
-            <div style="font-size: 10px">40</div>
+            <div style="font-size: 10px">{{ config.abpMeanUpper }}</div>
+            <div style="font-size: 10px">{{ config.abpMeanLower }}</div>
+            <div
+              v-if="!config.abpAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-11 q-pt-xs" style="font-size: 52px">60/40 (42)</div>
+          <div
+            v-if="config.abpEnabled & !abpBlinker"
+            class="col-11 q-pt-xs"
+            style="font-size: 52px"
+          >
+            {{ vitals.abpSyst }}/{{ vitals.abpDiast }} ({{ vitals.abpMean }})
+          </div>
         </div>
       </div>
     </div>
@@ -155,16 +227,31 @@
           :timeframe="20"
           :performance="performance"
           signalSource="resp"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.respEnabled" class="col" style="font-size: 14px">
             <div>RF</div>
-            <div style="font-size: 10px">80</div>
-            <div style="font-size: 10px">20</div>
+            <div style="font-size: 10px">{{ config.respUpper }}</div>
+            <div style="font-size: 10px">{{ config.respLower }}</div>
+            <div
+              v-if="!config.respAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 68px">45</div>
+          <div
+            v-if="config.respEnabled & !respBlinker"
+            class="col-10 text-left q-pa-sm"
+            style="font-size: 68px"
+          >
+            {{ vitals.resprate }}
+          </div>
         </div>
       </div>
       <div class="col-2"></div>
@@ -183,18 +270,31 @@
           :timeframe="20"
           :performance="performance"
           signalSource="co2"
+          :vitals="vitals"
+          :config="config"
         ></ChannelComponent>
       </div>
 
       <div class="col-2">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.etco2Enabled" class="col" style="font-size: 14px">
             <div>etCO2</div>
-            <div style="font-size: 10px">7.5</div>
-            <div style="font-size: 10px">3.5</div>
+            <div style="font-size: 10px">{{ config.etco2Upper }}</div>
+            <div style="font-size: 10px">{{ config.etco2Lower }}</div>
+            <div
+              v-if="!config.etco2AlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-xs" style="font-size: 68px">
-            4.5
+          <div
+            v-if="config.etco2Enabled & !etco2Blinker"
+            class="col-10 text-left q-pa-xs"
+            style="font-size: 68px"
+          >
+            {{ vitals.etco2 }}
           </div>
         </div>
       </div>
@@ -203,13 +303,24 @@
     <div class="row justify-center q-ma-es text-orange" :style="rowHeight">
       <div class="col-3">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.nibdEnabled" class="col" style="font-size: 14px">
             <div>NIBD</div>
-            <div style="font-size: 10px">80</div>
-            <div style="font-size: 10px">40</div>
+            <div style="font-size: 10px">{{ config.abpMeanUpper }}</div>
+            <div style="font-size: 10px">{{ config.abpMeanLower }}</div>
+            <div
+              v-if="!config.nibdAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 40px">
-            60/40 (42)
+          <div
+            v-if="config.nibdEnabled & !nibdBlinker"
+            class="col-10 text-left q-pa-sm"
+            style="font-size: 40px"
+          >
+            {{ vitals.abpSyst }}/{{ vitals.abpDiast }} ({{ vitals.abpMean }})
           </div>
         </div>
       </div>
@@ -217,13 +328,24 @@
       <div class="col-2"></div>
       <div class="col-2 text-green">
         <div class="row">
-          <div class="col" style="font-size: 14px">
+          <div v-if="config.tempEnabled" class="col" style="font-size: 14px">
             <div>Thuid</div>
-            <div style="font-size: 10px">38</div>
-            <div style="font-size: 10px">36</div>
+            <div style="font-size: 10px">{{ config.tempUpper }}</div>
+            <div style="font-size: 10px">{{ config.tempLower }}</div>
+            <div
+              v-if="!config.tempAlarmEnabled"
+              class="bg-white text-red text-center"
+              style="font-size: 14px"
+            >
+              X
+            </div>
           </div>
-          <div class="col-10 text-left q-pa-sm" style="font-size: 40px">
-            37.1
+          <div
+            v-if="config.tempEnabled & !tempBlinker"
+            class="col-10 text-left q-pa-sm"
+            style="font-size: 40px"
+          >
+            {{ vitals.temp }}
           </div>
         </div>
       </div>
@@ -259,6 +381,7 @@
           color="grey"
           style="height: 60px; width: 80px; font-size: 12px"
           label="Nullen"
+          @click="changeConfigTest"
         />
         <q-btn
           color="grey"
@@ -315,14 +438,230 @@ export default {
       butConnectClass: "q-ma-lg bg-red text-white",
       monitorStarted: "false",
       performance: 30,
+      vitals: {
+        heartrate: 125,
+        spo2Pre: 82,
+        spo2Post: 80,
+        abpSyst: 60,
+        abpDiast: 40,
+        abpMean: 42,
+        resprate: 45,
+        etco2: 4.5,
+        temp: 37.5,
+        pfi: 1.2,
+      },
+      config: {
+        hrEnabled: true,
+        hrAlarmEnabled: false,
+        hrUpper: 200,
+        hrLower: 80,
+        spo2PreEnabled: true,
+        spo2PreAlarmEnabled: true,
+        spo2PreUpper: 100,
+        spo2PreLower: 92,
+        spo2PostEnabled: false,
+        spo2PostAlarmEnabled: false,
+        spo2PostUpper: 100,
+        spo2PostLower: 92,
+        abpEnabled: false,
+        abpAlarmEnabled: false,
+        abpMeanUpper: 80,
+        abpMeanLower: 40,
+        respEnabled: true,
+        respAlarmEnabled: false,
+        respUpper: 80,
+        respLower: 30,
+        etco2Enabled: false,
+        etco2AlarmEnabled: false,
+        etco2Upper: 7.0,
+        etco2Lower: 4.0,
+        tempEnabled: true,
+        tempAlarmEnabled: false,
+        tempUpper: 38.0,
+        tempLower: 36.5,
+        nibdEnabled: true,
+        nibdAlarmEnabled: true,
+        alarmOverride: false,
+      },
+      blinkerTimer: null,
+      blinkerCounter: 0,
+      blinkerInterval: 1000,
+      blinkerState: false,
+      yellowAlarm: true,
+      redAlarm: true,
+      alarmBannerClass: "col text-black bg-black text-center",
+      alarmBannerMessage: "",
+      hrBlinker: false,
+      spo2PreBlinker: false,
+      spo2PostBlinker: false,
+      abpBlinker: false,
+      respBlinker: false,
+      etco2Blinker: false,
+      nibdBlinker: false,
+      tempBlinker: false,
     };
   },
   methods: {
+    checkAlarms() {
+      let yellowAlarm = false;
+      let redAlarm = false;
+      let alarmMessage = "";
+
+      this.hrBlinker = false;
+      if (this.config.hrAlarmEnabled & this.config.hrEnabled) {
+        // check hr
+        if (this.vitals.heartrate < this.config.hrLower) {
+          yellowAlarm = true;
+          this.hrBlinker = this.blinker;
+          alarmMessage += " *HR<" + this.config.hrLower;
+        }
+        if (this.vitals.heartrate > this.config.hrUpper) {
+          yellowAlarm = true;
+          this.hrBlinker = this.blinker;
+          alarmMessage += " *HR>" + this.config.hrUpper;
+        }
+      }
+
+      // check spo2 pre
+      this.spo2PreBlinker = false;
+      if (this.config.spo2PreAlarmEnabled & this.config.spo2PreEnabled) {
+        if (this.vitals.spo2Pre < this.config.spo2PreLower) {
+          yellowAlarm = true;
+          this.spo2PreBlinker = this.blinker;
+          alarmMessage += " *SAT<" + this.config.spo2PreLower;
+        }
+        if (this.vitals.spo2Pre > this.config.spo2PreUpper) {
+          yellowAlarm = true;
+          this.spo2PreBlinker = this.blinker;
+          alarmMessage += " *SAT>" + this.config.spo2PostUpper;
+        }
+      }
+
+      // check spo2 post
+      this.spo2PostBlinker = false;
+      if (this.config.spo2PostAlarmEnabled & this.config.spo2PostEnabled) {
+        if (this.vitals.spo2Post < this.config.spo2PostLower) {
+          yellowAlarm = true;
+          this.spo2PreBlinker = this.blinker;
+          alarmMessage += " *SAT<" + this.config.spo2PostLower;
+        }
+        if (this.vitals.spo2Post > this.config.spo2PostUpper) {
+          yellowAlarm = true;
+          this.spo2PreBlinker = this.blinker;
+          alarmMessage += " *SAT>" + this.config.spo2PostUpper;
+        }
+      }
+
+      // check abp mean
+      this.abpBlinker = false;
+      if (this.config.abpAlarmEnabled & this.config.abpEnabled) {
+        if (this.vitals.abpMean < this.config.abpMeanLower) {
+          yellowAlarm = true;
+          this.abpBlinker = this.blinker;
+          alarmMessage += " *ABP(m)<" + this.config.abpMeanLower;
+        }
+        if (this.vitals.abpMean > this.config.abpMeanUpper) {
+          yellowAlarm = true;
+          this.abpBlinker = this.blinker;
+          alarmMessage += " *ABP(m)>" + this.config.abpMeanUpper;
+        }
+      }
+
+      this.respBlinker = false;
+      if (this.config.respAlarmEnabled & this.config.respEnabled) {
+        // check resprate
+        if (this.vitals.resprate < this.config.respLower) {
+          yellowAlarm = true;
+          this.respBlinker = this.blinker;
+          alarmMessage += " *RESP<" + this.config.respLower;
+        }
+        if (this.vitals.resprate > this.config.respUpper) {
+          yellowAlarm = true;
+          this.respBlinker = this.blinker;
+          alarmMessage += " *RESP>" + this.config.respUpper;
+        }
+      }
+
+      this.etco2Blinker = false;
+      if (this.config.etco2AlarmEnabled & this.config.etco2Enabled) {
+        // check etco2
+        if (this.vitals.etco2 < this.config.etco2Lower) {
+          yellowAlarm = true;
+          this.etco2Blinker = this.blinker;
+          alarmMessage += " *ETCO2<" + this.config.etco2Lower;
+        }
+        if (this.vitals.etco2 > this.config.etco2Upper) {
+          yellowAlarm = true;
+          this.etco2Blinker = this.blinker;
+          alarmMessage += " *ETCO2>" + this.config.etco2Upper;
+        }
+      }
+
+      this.tempBlinker = false;
+      if (this.config.tempAlarmEnabled & this.config.tempEnabled) {
+        // check temp
+        if (this.vitals.temp < this.config.tempLower) {
+          yellowAlarm = true;
+          this.tempBlinker = this.blinker;
+          alarmMessage += " *TEMP<" + this.config.tempLower;
+        }
+        if (this.vitals.temp > this.config.tempUpper) {
+          yellowAlarm = true;
+          this.tempBlinker = this.blinker;
+          alarmMessage += " *TEMP>" + this.config.tempUpper;
+        }
+      }
+
+      // check abp mean
+      this.nibdBlinker = false;
+      if (this.config.nibdAlarmEnabled & this.config.nibdEnabled) {
+        if (this.vitals.abpMean < this.config.abpMeanLower) {
+          yellowAlarm = true;
+          this.nibdBlinker = this.blinker;
+          alarmMessage += " *NIBD(m)<" + this.config.abpMeanLower;
+        }
+        if (this.vitals.abpMean > this.config.abpMeanUpper) {
+          yellowAlarm = true;
+          this.nibdBlinker = this.blinker;
+          alarmMessage += " *NIBD(m)>" + this.config.abpMeanUpper;
+        }
+      }
+
+      if (yellowAlarm) {
+        this.yellowAlarm = true;
+      } else {
+        this.yellowAlarm = false;
+      }
+
+      if (redAlarm) {
+        this.redAlarm = true;
+      } else {
+        this.redAlarm = false;
+      }
+
+      if (yellowAlarm) {
+        this.alarmBannerClass = "col text-black bg-yellow text-center";
+        this.alarmBannerMessage = alarmMessage;
+      } else {
+        this.alarmBannerClass = "col text-black bg-black text-center";
+      }
+      this.blinker = !this.blinker;
+    },
+    changeConfigTest() {
+      this.config.abpEnabled = true;
+      this.vitals.heartrate = 60;
+      this.vitals.spo2Pre = 95;
+    },
+    changeVitalsTest() {
+      this.vitals.heartrate = 170;
+    },
     startMonitor() {
       if (this.monitorStarted == "true") {
         this.monitorStarted = "false";
+        clearInterval(this.blinkerTimer);
       } else {
         this.monitorStarted = "true";
+        this.blinkerTimer = setInterval(this.checkAlarms, 1000);
       }
     },
     onResize() {

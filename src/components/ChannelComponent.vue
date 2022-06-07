@@ -55,6 +55,14 @@ export default {
       required: true,
       type: String,
     },
+    vitals: {
+      required: true,
+      type: Object,
+    },
+    config: {
+      required: true,
+      type: Object,
+    },
   },
   watch: {
     monitorStarted: function (newValue, oldValue) {
@@ -64,6 +72,13 @@ export default {
       } else {
         clearInterval(this.timer);
       }
+    },
+    config: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        this.configChanged = true;
+      },
     },
   },
   data() {
@@ -99,6 +114,14 @@ export default {
       abpStarted: false,
       abpCounter: 0,
       resprate: 45,
+      respCounter: 0,
+      breathInterval: 2000,
+      breathDuration: 750,
+      breathCounter: 0,
+      breathStarted: false,
+      breathSignal: 0,
+      noSignal: false,
+      configChanged: false,
     };
   },
   mounted() {
@@ -111,6 +134,26 @@ export default {
     this.pixiApp = null;
   },
   methods: {
+    etCO2WaveForm() {
+      let signal1 = this.chartHeight * 0.7;
+      let noOfSteps = this.breathDuration / this.performance;
+      // so i have 20 steps with a heartrate interval of 1000 and performance of 50
+      // in those 20 steps i have to cover PI
+      let breath_step = Math.PI / noOfSteps;
+
+      if (this.breathStarted) {
+        signal1 =
+          this.chartHeight * 0.7 -
+          Math.sin(this.breathCounter) * this.chartHeight * 0.7;
+
+        this.breathCounter += breath_step;
+        if (this.breathCounter > Math.PI) {
+          this.breathCounter = 0;
+          this.breathStarted = false;
+        }
+      }
+      return signal1 + Math.random() * 2;
+    },
     ecgWaveForm() {
       let signal = 0;
       // calculate the ecg signal
@@ -125,6 +168,70 @@ export default {
       }
 
       return signal + Math.random() * 3;
+    },
+    breathWaveForm() {
+      let signal1 = 0;
+      let noOfSteps = this.breathDuration / this.performance;
+      // so i have 20 steps with a heartrate interval of 1000 and performance of 50
+      // in those 20 steps i have to cover PI
+      let breath_step = Math.PI / noOfSteps;
+
+      if (this.breathStarted) {
+        signal1 = Math.sin(this.breathCounter) * this.chartHeight * 0.7;
+
+        this.breathCounter += breath_step;
+        if (this.breathCounter > Math.PI) {
+          this.breathCounter = 0;
+          this.breathStarted = false;
+        }
+      }
+      return signal1 + Math.random() * 2;
+    },
+    spo2PreWaveForm() {
+      let signal1 = 0;
+      let signal2 = 0;
+      let noOfSteps = this.heartrateInterval / this.performance;
+      // so i have 20 steps with a heartrate interval of 1000 and performance of 50
+      // in those 20 steps i have to cover PI
+      let abp_step = Math.PI / noOfSteps;
+
+      if (this.abpStarted) {
+        signal1 = Math.sin(this.abpCounter) * this.chartHeight * 0.5;
+        signal2 = Math.sin(this.abpCounter) * this.chartHeight * 0.35;
+        this.abpCounter += abp_step;
+        if (this.abpCounter > Math.PI) {
+          this.abpCounter = 0;
+        }
+      }
+
+      if (this.abpCounter > Math.PI / 1.4) {
+        return signal2;
+      } else {
+        return signal1;
+      }
+    },
+    spo2PostWaveForm() {
+      let signal1 = 0;
+      let signal2 = 0;
+      let noOfSteps = this.heartrateInterval / this.performance;
+      // so i have 20 steps with a heartrate interval of 1000 and performance of 50
+      // in those 20 steps i have to cover PI
+      let abp_step = Math.PI / noOfSteps;
+
+      if (this.abpStarted) {
+        signal1 = Math.sin(this.abpCounter) * this.chartHeight * 0.5;
+        signal2 = Math.sin(this.abpCounter) * this.chartHeight * 0.35;
+        this.abpCounter += abp_step;
+        if (this.abpCounter > Math.PI) {
+          this.abpCounter = 0;
+        }
+      }
+
+      if (this.abpCounter > Math.PI / 1.4) {
+        return signal2;
+      } else {
+        return signal1;
+      }
     },
     abpWaveForm() {
       let signal1 = 0;
@@ -150,10 +257,8 @@ export default {
       }
     },
     drawChart() {
-      this.heartrateInterval = 60000 / this.heartrate;
-      this.chart1.lineStyle(2, this.chartColor, 1);
-      this.chart2.lineStyle(2, this.chartColor, 1);
-      this.chart3.lineStyle(2, this.chartColor, 1);
+      this.heartrateInterval = 60000 / this.vitals.heartrate;
+      this.breathInterval = 60000 / this.vitals.resprate;
 
       if (this.chart1X == 0) {
         this.chart1.clear();
@@ -177,29 +282,79 @@ export default {
       this.chart1X += this.stepsize;
 
       let ySignal = 0;
+      this.noSignal = false;
       switch (this.signalSource) {
         case "ecg":
-          ySignal = this.ecgWaveForm();
+          if (this.config.hrEnabled) {
+            ySignal = this.ecgWaveForm();
+          } else {
+            this.noSignal = true;
+          }
+          break;
+        case "spo2pre":
+          if (this.config.spo2PreEnabled) {
+            ySignal = this.spo2PreWaveForm();
+          } else {
+            this.noSignal = true;
+          }
+          break;
+        case "spo2post":
+          if (this.config.spo2PostEnabled) {
+            ySignal = this.spo2PostWaveForm();
+          } else {
+            this.noSignal = true;
+          }
           break;
         case "abp":
-          ySignal = this.abpWaveForm();
+          if (this.config.abpEnabled) {
+            ySignal = this.abpWaveForm();
+          } else {
+            this.noSignal = true;
+          }
+          break;
+        case "resp":
+          if (this.config.respEnabled) {
+            ySignal = this.breathWaveForm();
+          } else {
+            this.noSignal = true;
+          }
+
+          break;
+        case "co2":
+          if (this.config.etco2Enabled) {
+            ySignal = this.etCO2WaveForm();
+          } else {
+            this.noSignal = true;
+          }
           break;
       }
       this.chart1Y = this.chartHeight - 10 - ySignal;
-      this.chart1.lineTo(this.chart1X, this.chart1Y);
 
-      // draw the cursor
-      this.chart1.lineStyle(0, "0x000000");
-      this.chart1.beginFill("0x000000");
-      this.chart1.drawRect(this.chart1X, 0, 10, this.chartHeight);
-      this.chart1.endFill();
+      if (this.noSignal) {
+        this.chart1.lineStyle(1, "0x000000", 1);
+        this.chart2.lineStyle(1, "0x000000", 1);
+        this.chart3.lineStyle(1, "0x000000", 1);
+        this.grid.clear();
+        this.pixiApp.stage.removeChild(this.labelText);
+      } else {
+        this.chart1.lineStyle(2, this.chartColor, 1);
+        this.chart2.lineStyle(2, this.chartColor, 1);
+        this.chart3.lineStyle(2, this.chartColor, 1);
+        this.chart1.lineTo(this.chart1X, this.chart1Y);
 
-      // draw the buffers
-      if (this.bufferChart == 2) {
-        this.chart2.lineTo(this.chart1X, this.chart1Y);
-      }
-      if (this.bufferChart == 3) {
-        this.chart3.lineTo(this.chart1X, this.chart1Y);
+        // draw the cursor
+        this.chart1.lineStyle(0, "0x000000");
+        this.chart1.beginFill("0x000000");
+        this.chart1.drawRect(this.chart1X, 0, 10, this.chartHeight);
+        this.chart1.endFill();
+
+        // draw the buffers
+        if (this.bufferChart == 2) {
+          this.chart2.lineTo(this.chart1X, this.chart1Y);
+        }
+        if (this.bufferChart == 3) {
+          this.chart3.lineTo(this.chart1X, this.chart1Y);
+        }
       }
 
       // store the previous X
@@ -220,8 +375,20 @@ export default {
         this.abpStarted = true;
       }
 
+      if (this.respCounter > this.breathInterval) {
+        this.respCounter = 0;
+        this.breathStarted = true;
+      }
+
       // increase the clock
       this.heartrateCounter += this.performance;
+      this.respCounter += this.performance;
+
+      if (this.configChanged) {
+        this.configChanged = false;
+        this.drawGrid();
+        this.updateLabel();
+      }
     },
     drawGrid() {
       if (this.gridEnabled) {

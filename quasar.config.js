@@ -144,8 +144,8 @@ module.exports = configure(function (ctx) {
       },
 
       manifest: {
-        name: `Quasar App`,
-        short_name: `Quasar App`,
+        name: `Monitor Emulator`,
+        short_name: `Monitor Emulator`,
         description: `A Quasar Project`,
         display: "standalone",
         orientation: "portrait",
