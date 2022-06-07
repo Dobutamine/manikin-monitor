@@ -16,8 +16,9 @@
           gridColor="0x00ff00"
           chartColor="0x00ff00"
           :monitorStarted="monitorStarted"
-          :speed="10"
+          :timeframe="6"
           :performance="performance"
+          signalSource="ecg"
         ></ChannelComponent>
       </div>
       <div class="col-2">
@@ -57,8 +58,9 @@
           gridColor="0xce04fd"
           chartColor="0xce04fd"
           :monitorStarted="monitorStarted"
-          :speed="10"
+          :timeframe="6"
           :performance="performance"
+          signalSource="abp"
         ></ChannelComponent>
       </div>
       <div class="col-2">
@@ -95,8 +97,9 @@
           gridColor="0xde56fd"
           chartColor="0xde56fd"
           :monitorStarted="monitorStarted"
-          :speed="10"
+          :timeframe="6"
           :performance="performance"
+          signalSource="abp"
         ></ChannelComponent>
       </div>
       <div class="col-2">
@@ -122,8 +125,9 @@
           gridColor="0xdd0000"
           chartColor="0xff0000"
           :monitorStarted="monitorStarted"
-          :speed="10"
+          :timeframe="6"
           :performance="performance"
+          signalSource="abp"
         ></ChannelComponent>
       </div>
       <div class="col-4">
@@ -148,8 +152,9 @@
           gridColor="0xffffff"
           chartColor="0xffffff"
           :monitorStarted="monitorStarted"
-          :speed="5"
+          :timeframe="20"
           :performance="performance"
+          signalSource="resp"
         ></ChannelComponent>
       </div>
       <div class="col-2">
@@ -175,8 +180,9 @@
           gridColor="0xf9ea03"
           chartColor="0xf9ea03"
           :monitorStarted="monitorStarted"
-          :speed="5"
+          :timeframe="20"
           :performance="performance"
+          signalSource="co2"
         ></ChannelComponent>
       </div>
 
@@ -308,7 +314,7 @@ export default {
       butConnectText: "CONNECT TO MANIKIN",
       butConnectClass: "q-ma-lg bg-red text-white",
       monitorStarted: "false",
-      performance: 50,
+      performance: 30,
     };
   },
   methods: {

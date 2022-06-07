@@ -43,13 +43,17 @@ export default {
       required: true,
       type: String,
     },
-    speed: {
+    timeframe: {
       required: true,
       type: Number,
     },
     performance: {
       required: true,
       type: Number,
+    },
+    signalSource: {
+      required: true,
+      type: String,
     },
   },
   watch: {
@@ -77,11 +81,24 @@ export default {
       width: 1000,
       labelText: null,
       labelStyle: null,
-      ecgData: [0, 10, 23, 10, 0, 20, 45, 50, 45, 20, 0],
+      ecgData: [0, 2, 4, 3, 0, 40, -7, 0, 5, 8, 5, 0],
+      abdWave: [],
       yOffset: 10,
       xOffset: 1,
       timer: null,
       bufferChart: 2,
+      clock: 0,
+      stepsize: 10,
+      heartrate: 125,
+      heartrateInterval: 1000,
+      heartrateCounter: 0,
+      ecgStarted: false,
+      ecgCounter: 0,
+      ecgSignal: 0,
+      abpSignal: 0,
+      abpStarted: false,
+      abpCounter: 0,
+      resprate: 45,
     };
   },
   mounted() {
@@ -94,7 +111,46 @@ export default {
     this.pixiApp = null;
   },
   methods: {
+    ecgWaveForm() {
+      let signal = 0;
+      // calculate the ecg signal
+      if (this.ecgStarted) {
+        signal = this.ecgData[this.ecgCounter];
+        this.ecgCounter += 1;
+      }
+
+      if (this.ecgCounter >= this.ecgData.length) {
+        this.ecgStarted = false;
+        this.ecgCounter = 0;
+      }
+
+      return signal + Math.random() * 3;
+    },
+    abpWaveForm() {
+      let signal1 = 0;
+      let signal2 = 0;
+      let noOfSteps = this.heartrateInterval / this.performance;
+      // so i have 20 steps with a heartrate interval of 1000 and performance of 50
+      // in those 20 steps i have to cover PI
+      let abp_step = Math.PI / noOfSteps;
+
+      if (this.abpStarted) {
+        signal1 = Math.sin(this.abpCounter) * this.chartHeight * 0.5;
+        signal2 = Math.sin(this.abpCounter) * this.chartHeight * 0.35;
+        this.abpCounter += abp_step;
+        if (this.abpCounter > Math.PI) {
+          this.abpCounter = 0;
+        }
+      }
+
+      if (this.abpCounter > Math.PI / 1.4) {
+        return signal2;
+      } else {
+        return signal1;
+      }
+    },
     drawChart() {
+      this.heartrateInterval = 60000 / this.heartrate;
       this.chart1.lineStyle(2, this.chartColor, 1);
       this.chart2.lineStyle(2, this.chartColor, 1);
       this.chart3.lineStyle(2, this.chartColor, 1);
@@ -118,14 +174,24 @@ export default {
       this.chart3.moveTo(this.chart1X, this.prevChart1Y);
 
       // draw the graph
-      this.chart1X += this.speed;
-      this.chart1Y = 20 + Math.random() * 10;
+      this.chart1X += this.stepsize;
+
+      let ySignal = 0;
+      switch (this.signalSource) {
+        case "ecg":
+          ySignal = this.ecgWaveForm();
+          break;
+        case "abp":
+          ySignal = this.abpWaveForm();
+          break;
+      }
+      this.chart1Y = this.chartHeight - 10 - ySignal;
       this.chart1.lineTo(this.chart1X, this.chart1Y);
 
       // draw the cursor
       this.chart1.lineStyle(0, "0x000000");
       this.chart1.beginFill("0x000000");
-      this.chart1.drawRect(this.chart1X, 0, 10, 50);
+      this.chart1.drawRect(this.chart1X, 0, 10, this.chartHeight);
       this.chart1.endFill();
 
       // draw the buffers
@@ -142,7 +208,20 @@ export default {
       // reset the x coordinate
       if (this.chart1X > this.width) {
         this.chart1X = 0;
+        // reset the clock
+        this.clock = 0;
       }
+
+      // calculate the signals
+      if (this.heartrateCounter > this.heartrateInterval) {
+        this.heartrateCounter = 0;
+        this.ecgStarted = true;
+        this.ecgCounter = 0;
+        this.abpStarted = true;
+      }
+
+      // increase the clock
+      this.heartrateCounter += this.performance;
     },
     drawGrid() {
       if (this.gridEnabled) {
@@ -174,6 +253,9 @@ export default {
       if (this.canvas) {
         // get the current width of the canvas
         this.width = this.canvas.getBoundingClientRect().width;
+        // calculate the speed
+        this.stepsize =
+          this.width / ((this.timeframe * 1000) / this.performance);
         // resize the pixiApp renderer
         if (this.pixiApp) {
           this.pixiApp.renderer.resize(this.width, this.chartHeight);
