@@ -499,7 +499,15 @@ export default {
       etco2Blinker: false,
       nibdBlinker: false,
       tempBlinker: false,
+      alarmHi: null,
+      alarmLo: null,
     };
+  },
+  mounted() {
+    this.alarmHi = new Audio("/sounds/alarm_hi.wav");
+    this.alarmHi.preload = "auto";
+    this.alarmLo = new Audio("/sounds/alarm_lo.wav");
+    this.alarmLo.preload = "auto";
   },
   methods: {
     checkAlarms() {
@@ -642,6 +650,8 @@ export default {
       if (yellowAlarm) {
         this.alarmBannerClass = "col text-black bg-yellow text-center";
         this.alarmBannerMessage = alarmMessage;
+        // play alarm sound
+        this.alarmLo.play();
       } else {
         this.alarmBannerClass = "col text-black bg-black text-center";
       }
@@ -651,6 +661,7 @@ export default {
       this.config.abpEnabled = true;
       this.vitals.heartrate = 60;
       this.vitals.spo2Pre = 95;
+      this.config.hrAlarmEnabled = true;
     },
     changeVitalsTest() {
       this.vitals.heartrate = 170;
@@ -662,6 +673,7 @@ export default {
       } else {
         this.monitorStarted = "true";
         this.blinkerTimer = setInterval(this.checkAlarms, 1000);
+        this.alarmLo.play();
       }
     },
     onResize() {
